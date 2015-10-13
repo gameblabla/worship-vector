@@ -1,0 +1,54 @@
+CC = nspire-gcc
+
+EXE = worship.elf
+
+CFLAGS = -O2 -fomit-frame-pointer -fdata-sections -ffunction-sections -DGCW
+CFLAGS += -D__BUILDDATE=\"$(shell date +%d-%b-%Y)\"
+LDFLAGS = -Wl,--gc-sections -Wl,--as-needed -flto
+INCLUDE = -I/usr/include/SDL
+
+LIB = -lSDL 
+
+SRC = 	gameframe.c \
+	gamestate.c \
+	initgame.c \
+	mapdata.c \
+	playeriteraction.c \
+	renderobjects.c \
+	vars.c \
+	gamegui.c \
+	gamestep.c \
+	main.c \
+	mobs.c \
+	postrender.c \
+	sblit.c \
+	vlines.c \
+	zmath.c \
+	gameloop.c \
+	gpu3d.c \
+	mainmenu.c \
+	palette.c \
+	rendermap.c \
+	ssystem.c \
+	waveai.c
+CFLAGS += $(DEFS)
+
+OBJ = $(SRC:.c=.o)
+
+all : $(SRC) $(EXE) gen
+
+$(EXE): $(OBJ)
+	$(CC) $(LDFLAGS) $(OBJ) $(LIB) -o $@
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+clean:
+	rm -rf $(OBJ) $(EXE)
+	
+gen:
+	genzehn --input worship.elf --output worship.t --compress
+	make-prg worship.t worship.tns
+	rm worship.t
+	rm worship.elf
+
