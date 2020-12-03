@@ -14,37 +14,29 @@
  */
 
 #include <string.h>
-#include <SDL.h>
-
+#include <SDL/SDL.h>
+#ifdef _TINSPIRE
+#include <libndls.h>
+#endif
 #include "vars.h"
 #include "ssystem.h"
 #include "palette.h"
 #include "zmath.h"
 
-	unsigned char button_state[8], button_time[8];
+static SDL_Surface *screen = NULL;
+unsigned char button_state[8], button_time[8];
 
-#ifdef GP2X
-#include "zlext.h"
-#include "sys/mman.h"
-#include "fcntl.h"
 
-volatile unsigned short *MEM_REG;
-unsigned long gp2x_dev=0;
-
-void RamHack(void) //I't me! RamHack!
-{
-}
-#endif
 void Terminate(void) {
 	FreeSound();
+	if (screen)
+	{
+		SDL_FreeSurface(screen);
+		screen = NULL;
+	}
 	SDL_Quit();
-#ifdef GP2X
-	chdir("/usr/gp2x");
-	execl("/usr/gp2x/gp2xmenu", "/usr/gp2x/gp2xmenu", NULL);
-#endif
 }
 
-SDL_Surface *screen = NULL;
 
 Uint8 d_sound_count = 0;
 int audio_channels = 1;
@@ -104,30 +96,7 @@ static const SDLKey sd_keyb[23] = { SDLK_KP8, SDLK_KP9, SDLK_KP6, SDLK_KP3,
 
 static const int sd_key_ref[11] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
-#ifdef GP2X// GP2X button mapping
-enum MAP_KEY
-{
-	VK_UP , // 0
-	VK_UP_LEFT ,// 1
-	VK_LEFT ,// 2
-	VK_DOWN_LEFT ,// 3
-	VK_DOWN ,// 4
-	VK_DOWN_RIGHT ,// 5
-	VK_RIGHT ,// 6
-	VK_UP_RIGHT ,// 7
-	VK_START ,// 8
-	VK_SELECT ,// 9
-	VK_FL ,// 10
-	VK_FR ,// 11
-	VK_FA ,// 12
-	VK_FB ,// 13
-	VK_FX ,// 14
-	VK_FY ,// 15
-	VK_VOL_UP ,// 16
-	VK_VOL_DOWN ,// 17
-	VK_FZ// 18 :)
-};
-#endif
+
 #if defined(WIN32) || defined(GCW) || defined(LINUX)// WIN button mapping
 enum MAP_KEY
 {
@@ -314,24 +283,6 @@ void CoreProcInput(void) {
 
 	for (i=8;i<19;i++)
 	if (i_keyb[i]) button[i-8]=1;
-	
-	
-	//volume control
-	if (volumedelay)
-		volumedelay--;
-	if (button[7]) {
-		if (volume + volumepower < 127)
-			SetVolume(volume + volumepower);
-		else
-			SetVolume(127);
-		volumedelay = 20;
-	} else if (button[6]) {
-		if (volume - volumepower > 0)
-			SetVolume(volume - volumepower);
-		else
-			SetVolume(0);
-		volumedelay = 20;
-	}
 
 	//no more volume control
 	dpadi = 0;
@@ -350,9 +301,6 @@ void CoreProcInput(void) {
 }
 void GameCoreTick(void) {
 	CoreProcInput();
-#ifdef GP2X
-	zlExtFrame();
-#endif
 
 	SDL_LockSurface(screen);
 	memcpy(screen->pixels,screen_buffering,76800);
@@ -361,8 +309,10 @@ void GameCoreTick(void) {
 
 	SDL_Flip(screen);
 
-#ifndef _TINSPIRE
 	if (gamespeed > 0)
+#ifdef _TINSPIRE
+		msleep(gamespeed * 10);
+#else
 		SDL_Delay(gamespeed * 10);
 #endif
 

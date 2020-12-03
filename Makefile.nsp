@@ -2,10 +2,10 @@ CC = nspire-gcc
 
 EXE = worship.elf
 
-CFLAGS = -O2 -fomit-frame-pointer -fdata-sections -ffunction-sections -DGCW
+CFLAGS = -Ofast -marm -march=armv5te -std=c99 -mtune=arm926ej-s -flto -fomit-frame-pointer -fdata-sections -ffunction-sections -DGCW
 CFLAGS += -D__BUILDDATE=\"$(shell date +%d-%b-%Y)\"
 LDFLAGS = -Wl,--gc-sections -Wl,--as-needed -flto
-INCLUDE = -I/usr/include/SDL
+INCLUDE =
 
 LIB = -lSDL 
 
@@ -38,7 +38,7 @@ OBJ = $(SRC:.c=.o)
 all : $(SRC) $(EXE) gen
 
 $(EXE): $(OBJ)
-	$(CC) $(LDFLAGS) $(OBJ) $(LIB) -o $@
+	$(CC) $(CFLAGS) $(OBJ) $(LIB) -o $@ $(LDFLAGS)
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
@@ -47,8 +47,6 @@ clean:
 	rm -rf $(OBJ) $(EXE)
 	
 gen:
-	genzehn --input worship.elf --output worship.t --compress
-	make-prg worship.t worship.tns
-	rm worship.t
+	genzehn --input worship.elf --output worship.tns --compress
 	rm worship.elf
 

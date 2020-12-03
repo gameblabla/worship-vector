@@ -5,7 +5,7 @@ DEBUG=1
 
 EXE = worship.bin
 
-CFLAGS = -DLINUX -O2 -fomit-frame-pointer -ffunction-sections -ffast-math
+CFLAGS = -DLINUX -O2 -g3 -fomit-frame-pointer -ffunction-sections -ffast-math
 CFLAGS += -D__BUILDDATE=\"$(shell date +%d-%b-%Y)\"
 LDFLAGS = -flto
 INCLUDE = -I$(TOOLCHAIN_SYSROOT)/include -I$(TOOLCHAIN_SYSROOT)/include/SDL
