@@ -12,8 +12,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <SDL/SDL.h>
+ 
+typedef unsigned char Uint8;
+typedef signed char Sint8;
 
 extern void InitGameCore(void);
 extern void GameCoreTick(void);

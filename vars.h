@@ -12,11 +12,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <SDL/SDL.h>
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <math.h>
 #include "types.h"
 
-extern Uint8 screen_buffering[76800];
+extern uint8_t screen_buffering[320*240];
 extern Uint8 palette[256][3];
 extern Uint8 button[12], vbutton[12], buttonpressed;
 extern Sint8 dpad, dpadi;
