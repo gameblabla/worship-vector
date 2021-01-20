@@ -20,20 +20,25 @@
 #include "gpu3d.h"
 
 void PostRender(void) {
-	U32 x, y, i;
+	#ifdef BLENDING
+	U32 i;
+	#endif
 	zlclearscene();
 
-	if (volumedelay) {
-	}
-
+	#ifndef BLENDING
+	memset(screen_buffering, 0, 76800);
+	#else
 	if (screenblend == 0)
-		for (i = 0; i < 76800; i++) {
+	{
+		/*for (i = 0; i < 76800; i++) {
 			screen_buffering[i] = 0;
-		}
-
+		}*/
+		memset(screen_buffering, 0, 76800);
+	}
 	else
 		for (i = 0; i < 76800; i++) {
 			screen_buffering[i] = NextColor0[screen_buffering[i]];
 		}
+	#endif
 
 }

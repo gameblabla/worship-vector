@@ -15,7 +15,7 @@
 
 #include "vars.h"
 
-Uint8 screen_buffering[76800];
+Uint8* screen_buffering;
 Uint8 palette[256][3]; //768 bytes
 Uint8 button[12], vbutton[12], buttonpressed;
 Sint8 dpad = -1, dpadi;
@@ -51,7 +51,7 @@ Sint32 funds;
 
 Uint8 dpadpower;
 
-char s_textstring[128];
+char s_textstring[192];
 Sint8 l_textstring;
 
 Uint8 cursorvisual, menuitem, towermenu;
@@ -61,7 +61,11 @@ Sint32 aimap[32][32], dirmap[32][32], spawnx, spawny;
 Sint32 bullet[128][16], vline[128][16], mob[128][16], newvline[16],
 		newbullet[16];
 
-Uint8 soundon = 1, musicon = 1, screenblend = 1;
+#ifdef BLENDING
+Uint8 soundon = 1, musicon = 1,screenblend = 1;
+#else
+Uint8 soundon = 1, musicon = 1;
+#endif
 
 Uint16 wavedelay = 0, mobdelay, wavemobleft;
 Sint32 iwavedata[100][8] =

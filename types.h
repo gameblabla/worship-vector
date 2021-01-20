@@ -19,4 +19,3 @@ typedef unsigned int U16;
 typedef signed int S16;
 typedef unsigned long U32;
 typedef signed long S32;
-

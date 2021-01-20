@@ -18,7 +18,7 @@
 #define FPMUL(x,y)	((((x)>>6)*((y)>>6))>>4)
 #define FPDIV(x,y)	((((x)<<6)/((y)>>6))>>4) 
 
-Sint32 matrix[16], matrix2[16], mmatrix[16], matrixstack[16];
+static Sint32 matrix[16], matrix2[16], mmatrix[16], matrixstack[16];
 Sint32 dist = 95500, dist0 = 90000;
 
 void matrixmul(void) {
@@ -35,13 +35,14 @@ void matrixmul(void) {
 }
 
 void zlrotatey(Sint32 alpha) {
+	Sint32 sy, cy;
 	Sint32 t = alpha;
 	t = t & 4095;
 	if (t < 0)
 		t = 4095 - t;
 
-	Sint32 sy = f_sin[t];
-	Sint32 cy = f_cos[t];
+	sy = f_sin[t];
+	cy = f_cos[t];
 
 	matrix2[0] = cy;
 	matrix2[1] = 0;
@@ -65,12 +66,13 @@ void zlrotatey(Sint32 alpha) {
 
 void zlrotatex(Sint32 alpha) {
 	Sint32 t = alpha;
+	Sint32 sy, cy;
 	t = t & 4095;
 	if (t < 0)
 		t = 4095 - t;
 
-	Sint32 sy = f_sin[t];
-	Sint32 cy = f_cos[t];
+	sy = f_sin[t];
+	cy = f_cos[t];
 
 	matrix2[0] = 65536;
 	matrix2[1] = 0;
@@ -92,13 +94,15 @@ void zlrotatex(Sint32 alpha) {
 	matrixmul();
 }
 void zlrotatez(Sint32 alpha) {
-	Sint32 t = alpha;
+	Sint32 t;
+	Sint32 sy, cy;
+	t = alpha;
 	t = t & 4095;
 	if (t < 0)
 		t = 4095 - t;
 
-	Sint32 sy = f_sin[t];
-	Sint32 cy = f_cos[t];
+	sy = f_sin[t];
+	cy = f_cos[t];
 
 	matrix2[0] = cy;
 	matrix2[1] = -sy;
@@ -152,7 +156,7 @@ void zlpopmatrix(void) {
 }
 
 void zlpoint(Sint32 vx, Sint32 vy, Sint32 vz) {
-	Sint32 x, y, t;
+	Sint32 x, t;
 	Sint32 v[4], v1[4];
 
 	v[0] = vx;
@@ -167,17 +171,23 @@ void zlpoint(Sint32 vx, Sint32 vy, Sint32 vz) {
 
 	t = v1[2] + dist;
 	if (t != 0)
-
+	{
 		if (v1[2] > -dist0) {
 			vvis[zlvertex] = 1;
 			vbufferx[zlvertex] = 140 + FPDIV(FPMUL(v1[0],dist),t);
 			vbuffery[zlvertex] = 120 - FPDIV(FPMUL(v1[1],dist),t);
 			vbufferz[zlvertex] = v1[2];
-		} else
+		}
+		else
+		{
 			vvis[zlvertex] = 0;
+		}
+	}
 }
 
 void zlclearscene(void) {
+	Uint8 i;
+	Sint32 de;
 	matrix[0] = 65536;
 	matrix[1] = 0;
 	matrix[2] = 0;
@@ -204,8 +214,6 @@ void zlclearscene(void) {
 	tcamera[1] = tcamera[1] + (camera[1] - tcamera[1]) / 4;
 	tcamera[2] = tcamera[2] + (camera[2] - tcamera[2]) / 4;
 
-	Uint8 i;
-	Sint32 de;
 	for (i = 3; i < 6; i++) {
 		camera[i] = camera[i] & 4095;
 		if (camera[i] < 0)

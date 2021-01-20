@@ -12,19 +12,23 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "vars.h"
 #include "ssystem.h"
 #include "gameloop.h"
 #include "initgame.h"
 
-int main(int argc, char *argv[]) {
-	InitGameCore();
-	InitGame();
+#ifdef __MACOS__
+int SDL_main (int argc, char *argv[])
+#else
+int main (int argc, char *argv[])
+#endif
+{
+	if (InitGameCore() == 1)
+	{
+		InitGame();
+		StartGameLoop();
+	}
 
-	StartGameLoop();
-
-	ShutDownCore();
+	Terminate();
 
 	return 0;
 }

@@ -13,6 +13,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <SDL/SDL.h>
+#include "mapdata.h"
+#include "playeriteraction.h"
+#include "zmath.h"
+#include "ssystem.h"
 #include "vars.h"
 #include "sblit.h"
 //#include "ssystem.h"
@@ -39,7 +44,7 @@ Sint8 olddpad2 = -1;
 
 void ProcGameMainMenu(void) {
 	Sint32 x, y, i, xx, yy, k, l;
-
+	Uint8 c;
 	for (i = 1; i < 16; i++) {
 		x = 1;
 		y = 20 + (count + i * 15) % 210;
@@ -48,7 +53,7 @@ void ProcGameMainMenu(void) {
 		DrawLine2(x, y, xx, yy, 7);
 	}
 
-	i = count % 1024;
+	//i = count % 1024;
 
 	y = cbrd[0];
 	k = count;
@@ -84,7 +89,7 @@ void ProcGameMainMenu(void) {
 			xx -= 320;
 		}
 	}
-	Uint8 c;
+	
 	if ((count / 16) % 2 == 0)
 		c = count / 4 % 4;
 	else
@@ -92,17 +97,19 @@ void ProcGameMainMenu(void) {
 
 	DarkRect(160 - c, 100 - c, 310 + c, 200 + c);
 	DarkRect(0, 0, 320, 30);
-	DarkRect(0, 220, 320, 239);
+	DarkRect(0, 220, 320, 238);
 
 	DrawRect(160 - c, 100 - c, 310 + c, 200 + c, 15);
 	DrawRect(0, 0, 320, 30, 15);
-	DrawRect(0, 220, 320, 239, 15);
+	DrawRect(0, 220, 320, 238, 15);
 
 //l_textstring=sprintf(s_textstring,"CAANOO version  26-nov-2010");
 #if defined(GCW)
-	l_textstring = sprintf(s_textstring, "GCW Zero version "__BUILDDATE);
+	l_textstring = sprintf(s_textstring, "GCW Zero version " __BUILDDATE);
+#elif defined(__MACOS__)
+	l_textstring = sprintf(s_textstring, "MacOS 8+ version by gameblabla");
 #else
-	l_textstring = sprintf(s_textstring, "Linux version    "__BUILDDATE);
+	l_textstring = sprintf(s_textstring, "Linux version " __BUILDDATE);
 #endif
 	s_drawtext(32, 222, 15);
 

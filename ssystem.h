@@ -15,7 +15,7 @@
 
 #include <SDL/SDL.h>
 
-extern void InitGameCore(void);
+extern Uint8 InitGameCore(void);
 extern void GameCoreTick(void);
 extern void ShutDownCore(void);
 
@@ -25,5 +25,6 @@ extern void PlaySoundEx(unsigned char ibank, signed char pan);
 extern void SetVolume(unsigned char volume);
 extern void LoadSound(void);
 void FreeSound(void);
+extern void Terminate(void);
 
 extern Sint8 olddpad;

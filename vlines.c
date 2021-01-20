@@ -23,7 +23,8 @@ extern void SpawnLine(void) {
 	Uint8 i = 0, k;
 	while ((i < 128) & (vline[i][0] > 0))
 		i++;
-	if (i == 128)
+		
+	if (i == 127)
 		i = random128();
 
 	for (k = 0; k < 16; k++)

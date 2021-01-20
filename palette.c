@@ -17,7 +17,7 @@
 U32 color[16];
 
 void InitPalette(void) {
-	U16 i, colors = 256;
+	U16 i;
 
 	color[0] = 0x000000;
 	color[1] = 0x0000AA;

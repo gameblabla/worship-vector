@@ -12,11 +12,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <SDL/SDL.h>
 #include "types.h"
 
-extern Uint8 screen_buffering[76800];
+extern Uint8* screen_buffering;
+//#define screen_buffering screen->pixels
+
 extern Uint8 palette[256][3];
 extern Uint8 button[12], vbutton[12], buttonpressed;
 extern Sint8 dpad, dpadi;
@@ -50,7 +51,7 @@ extern Sint32 turret0[64][64], turret1[64][64];
 extern Uint8 wave;
 extern Sint32 funds;
 
-extern char s_textstring[128];
+extern char s_textstring[192];
 extern Sint8 l_textstring;
 extern Uint8 dpadpower;
 
@@ -60,12 +61,13 @@ extern Sint32 funds, cost, gamespeed;
 extern Sint32 aimap[32][32], dirmap[32][32], spawnx, spawny;
 extern Sint32 bullet[128][16], vline[128][16], mob[128][16], newvline[16],
 		newbullet[16];
-
-extern Uint8 soundon, musicon, screenblend;
+#ifdef BLENDING
+extern Uint8 soundon, musicon,screenblend;
+#else
+extern Uint8 soundon, musicon;
+#endif
 
 extern Uint16 wavedelay, mobdelay, wavemobleft;
 extern Sint32 iwavedata[100][8];
 
 extern Uint8 lives;
-
-extern Sint32 debug_v[16];

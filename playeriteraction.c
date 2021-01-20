@@ -12,7 +12,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <SDL/SDL.h>
+#include "ssystem.h"
 #include "vars.h"
 
 #include "vlines.h"
@@ -51,8 +52,8 @@ void RaiseLand(Sint8 x, Sint8 y) {
 }
 
 void PlayerAction(void) {
-	cost = 0;
 	Sint32 ccx, ccy;
+	cost = 0;
 	if (cursorvisual == 2) { //cultivate
 		if (map[cx][cy] == 0)
 			cost = 10;
@@ -321,7 +322,7 @@ void PlayerAction(void) {
 }
 
 void PlayerIteraction(void) {
-	Sint32 i;
+	Sint32 icx = 0, icy = 0, cspeed;
 	camera[0] = cursorx + cm_cam[cursormode][0];
 	camera[2] = -cursory + cm_cam[cursormode][2];
 	camera[1] = +cm_cam[cursormode][1];
@@ -334,7 +335,7 @@ void PlayerIteraction(void) {
 //camera[4]+=2*zl_gsensor[5];
 	camera[3] += 2 * zl_gsensor[4];
 
-	Sint32 icx = 0, icy = 0, cspeed = cm_speed[cursormode];
+	cspeed = cm_speed[cursormode];
 
 	if (dpad > -1) {
 		if (cursormode < 4)
@@ -366,6 +367,7 @@ void PlayerIteraction(void) {
 		zl_vibro = 100;
 	}
 	if (vbutton[4] == 1)
+	{
 		if (cursormode > 0) {
 			PlaySound(0, 0);
 			cursormode--;
@@ -374,6 +376,7 @@ void PlayerIteraction(void) {
 			cursormode = 4;
 			PlaySound(0, 0);
 		}
+	}
 	if (vbutton[8] == 1) {
 		PlaySound(0, 0);
 		cursormode = 4;
@@ -381,8 +384,9 @@ void PlayerIteraction(void) {
 	} //Debug exit
 
 	if (lastcursormode != cursormode) {
-		for (i = 0; i < 76800; i++)
-			screen_buffering[i] = 15;
+		/*for (i = 0; i < 76800; i++)
+			screen_buffering[i] = 15;*/
+		memset(screen_buffering, 15, 76800);
 		cursormodecount = 0;
 	} else
 		cursormodecount++;

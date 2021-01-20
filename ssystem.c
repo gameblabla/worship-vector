@@ -15,6 +15,7 @@
 
 #include <string.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
 #ifdef _TINSPIRE
 #include <libndls.h>
 #endif
@@ -23,9 +24,8 @@
 #include "palette.h"
 #include "zmath.h"
 
-static SDL_Surface *screen = NULL;
-unsigned char button_state[8], button_time[8];
-
+SDL_Surface *screen = NULL, *rl_screen;
+static unsigned char button_state[8], button_time[8];
 
 void Terminate(void) {
 	FreeSound();
@@ -34,36 +34,68 @@ void Terminate(void) {
 		SDL_FreeSurface(screen);
 		screen = NULL;
 	}
+	
+	#ifdef SCALING
+	if (rl_screen)
+	{
+		SDL_FreeSurface(rl_screen);
+		rl_screen = NULL;
+	}
+	#endif
+
 	SDL_Quit();
 }
 
 
-Uint8 d_sound_count = 0;
-int audio_channels = 1;
-int audio_rate = 22050;
+static int audio_channels = 1;
+static int audio_rate = 11025;
 
-Uint16 audio_format;
-int audio_buffers;
+static Uint16 audio_format;
+static int audio_buffers;
 
-void InitGameCore(void) {
-	InitMath();
-	atexit(Terminate);
-
-#ifdef GP2X
-	RamHack();
+#ifdef SCALING
+static int simple2x = 0;
 #endif
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+Uint8 InitGameCore(void) {
+	Uint16 i;
+	InitMath();
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
-		exit(1);
+		return 0;
 	}
 
+	#ifdef SDLMIX_SOUND
+	if (Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels)) {
+		printf("Mix_QuerySpec: %s\n", Mix_GetError());
+	}
+
+	if (Mix_OpenAudio(audio_rate, audio_format, audio_channels,
+			audio_buffers)) {
+		printf("Unable to open audio!\n");
+		return 0;
+	}
+	#endif
+
 	SDL_ShowCursor(SDL_DISABLE);
-	screen = SDL_SetVideoMode (320, 240, 8, SDL_SWSURFACE);
+	
+	#ifdef FORCE2X
+	rl_screen = SDL_SetVideoMode (640, 480, 8, SDL_HWSURFACE | SDL_HWPALETTE | SDL_FULLSCREEN);
+	screen = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 8, 0,0,0,0);
+	#elif defined(SCALING)
+	rl_screen = SDL_SetVideoMode (0, 0, 8, SDL_HWSURFACE | SDL_HWPALETTE | SDL_FULLSCREEN);
+	screen = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 8, 0,0,0,0);
+	/* if Resolution is exactly 640x480 then use Simple2x scaler */
+	if (rl_screen->w == 640 && rl_screen->h == 480)
+	{
+		simple2x = 1;
+	}
+	#else
+	screen = SDL_SetVideoMode (320, 240, 8, SDL_HWSURFACE | SDL_HWPALETTE);
+	#endif
 
 	InitPalette();
 	
-	Uint16 i;
 	for (i=0;i<256;i++)
 	{
 		screen->format->palette->colors[i].r=palette[i][0];
@@ -71,30 +103,19 @@ void InitGameCore(void) {
 		screen->format->palette->colors[i].b=palette[i][2];
 	}
 	SDL_SetColors(screen,screen->format->palette->colors,0,256);
+	#if defined(SCALING) || defined(FORCE2X)
+	SDL_SetColors(rl_screen,screen->format->palette->colors,0,256);
+	#endif
+	
+	screen_buffering = screen->pixels;
 
 	LoadSound();
 	SetVolume(volume);
-#ifdef GP2X
-	zlExtInit();
-#endif
+
+	return 1;
 }
 
-#define AXIS_DEADZONE 7000
-static const Sint8 angle_detection[9] = { 7, 0, 1, 6, -1, 2, 5, 4, 3 };
-int i_keyb[23];
-static const SDLKey sd_keyb[23] = { SDLK_KP8, SDLK_KP9, SDLK_KP6, SDLK_KP3,
-		SDLK_KP2, SDLK_KP1, SDLK_KP4, SDLK_KP7, SDLK_LCTRL, 
-		//SDLK_LALT,
-		SDLK_BACKSPACE,
-		SDLK_LSHIFT, SDLK_SPACE, SDLK_TAB, SDLK_BACKSPACE, SDLK_MINUS,
-		SDLK_EQUALS, SDLK_ESCAPE, SDLK_1, SDLK_t, SDLK_UP, SDLK_RIGHT,
-		SDLK_DOWN, SDLK_LEFT };
-/*static const SDLKey sd_keyb[23]={SDLK_KP8,SDLK_KP9,SDLK_KP6,SDLK_KP3,SDLK_KP2,SDLK_KP1,SDLK_KP4,SDLK_KP7,
- * SDLK_SPACE,SDLK_q,SDLK_c,SDLK_a,SDLK_z,SDLK_x,SDLK_MINUS,SDLK_EQUALS,SDLK_ESCAPE,SDLK_TAB,SDLK_t,SDLK_UP,SDLK_RIGHT,SDLK_DOWN,SDLK_LEFT
- * };
- */
-
-static const int sd_key_ref[11] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+static Uint8 i_keyb[23];
 
 
 #if defined(WIN32) || defined(GCW) || defined(LINUX)// WIN button mapping
@@ -116,31 +137,40 @@ enum MAP_KEY
 
 Sint8 olddpad = -1;
 
-void CoreProcInput(void) {
+static void CoreProcInput(void) {
 	Uint8 *keystate = SDL_GetKeyState(NULL);
-	int i;
+	SDL_Event event;
+	Uint8 i;
 	int pad;
-
-	dpad = -1;
 	
-	for (i=0;i<5;i++)
+	for (i=0;i<8;i++)
 	{
 		switch (i)
 		{
 			case 0:
+			default:
 				pad = SDLK_TAB;
 			break;
 			case 1:
-				pad = SDLK_MENU;
+				pad = SDLK_BACKSPACE;
 			break;
 			case 2:
-				pad = SDLK_MINUS;
+				pad = SDLK_PAGEUP;
 			break;
 			case 3:
-				pad = SDLK_PLUS;
+				pad = SDLK_RETURN;
 			break;
 			case 4:
 				pad = SDLK_LCTRL;
+			break;
+			case 5:
+				pad = SDLK_PAGEDOWN;
+			break;
+			case 6:
+				pad = SDLK_l;
+			break;
+			case 7:
+				pad = SDLK_o;
 			break;
 		}
 		
@@ -184,78 +214,58 @@ void CoreProcInput(void) {
 		}	
 	}
 	
+
+	dpad = -1;
+
 	for(i=0;i<9;i++)
 	{
 		vbutton[i] = 0;
 	}
 	
-	if (button_state[4] == 1)
-	{
-		vbutton[0] = 1;
-	}
+	if (keystate[SDLK_UP]) i_keyb[0] = 1;
+	else i_keyb[0] = 0;
 	
+	if (keystate[SDLK_RIGHT]) i_keyb[2] = 1;
+	else i_keyb[2] = 0;
 	
-	if (keystate[SDLK_BACKSPACE])
-	{
-		vbutton[2] = 1;
-	}
+	if (keystate[SDLK_DOWN]) i_keyb[4] = 1;
+	else i_keyb[4] = 0;
 	
-	if (button_state[3] == 1)
+	if (keystate[SDLK_LEFT]) i_keyb[6] = 1;
+	else i_keyb[6] = 0;
+	
+	if (keystate[SDLK_RETURN]) vbutton[6] = 1;
+	else vbutton[6] = 0;
+
+	if (button_state[4] == 1 || button_state[3] == 1) vbutton[0] = 1;
+	else vbutton[0] = 0;
+
+	if (button_state[5] == 1 || button_state[6] == 1) vbutton[1] = 1;
+	else vbutton[1] = 0;
+	
+	if (keystate[SDLK_LSHIFT]) vbutton[2] = 1;
+	else vbutton[2] = 0;
+	
+	if (button_state[2] == 1 || button_state[7] == 1) vbutton[3] = 1;
+	else vbutton[3] = 0;
+	
+	if (keystate[SDLK_ESCAPE]) 
 	{
-		vbutton[3] = 1;
-	}
-	else if (button_state[2] == 1)
-	{
-		vbutton[1] = 1;
+		GameLoopEnabled=0;
 	}
 	
 	if (button_state[0] == 1)
 	{
 		vbutton[4] = 1;
 	}
+	else vbutton[4] = 0;
 	
 	if (button_state[1] == 1)
 	{
 		vbutton[5] = 1;
 	}
-	
-	if (keystate[SDLK_RETURN])
-	{
-		vbutton[6] = 1;
-	}
-	
-	//AXBYLR-+SS
-	/*button[0] = SDL_JoystickGetButton(joy, 0);
-	button[1] = SDL_JoystickGetButton(joy, 1);
-	button[2] = SDL_JoystickGetButton(joy, 2);
-	button[3] = SDL_JoystickGetButton(joy, 3);
-	button[4] = SDL_JoystickGetButton(joy, 4);
-	button[5] = SDL_JoystickGetButton(joy, 5);
-	button[8] = SDL_JoystickGetButton(joy, 6);*/
+	else vbutton[5] = 0;
 
-	//Keyboard
-	SDL_Event event;
-
-	while (SDL_PollEvent (&event))
-	{
-		switch (event.type)
-		{
-			case SDL_QUIT:
-			GameLoopEnabled=0;
-			break;
-			case SDL_KEYDOWN:
-			for (i=0;i<23;i++)
-			if (event.key.keysym.sym==sd_keyb[i])
-			i_keyb[i]=1;
-			break;
-			case SDL_KEYUP:
-			for (i=0;i<23;i++)
-			if (event.key.keysym.sym==sd_keyb[i])
-			i_keyb[i]=0;
-			break;
-
-		}
-	}
 	for (i=0;i<8;i++)
 	if (i_keyb[i]) dpad=i;
 
@@ -283,6 +293,7 @@ void CoreProcInput(void) {
 
 	for (i=8;i<19;i++)
 	if (i_keyb[i]) button[i-8]=1;
+	
 
 	//no more volume control
 	dpadi = 0;
@@ -298,56 +309,216 @@ void CoreProcInput(void) {
 //printf("state %i dir:%i\n",dpadi,dpad);
 //printf("v:%d, s:%d, m:%d\n", volume, soundon, musicon);
 
+	//Keyboard
+
+	while (SDL_PollEvent (&event))
+	{
+		switch (event.type)
+		{
+			case SDL_QUIT:
+			GameLoopEnabled=0;
+			break;
+		}
+	}
+// here
+//printf("state %i dir:%i\n",dpadi,dpad);
+//printf("v:%d, s:%d, m:%d\n", volume, soundon, musicon);
+
 }
+
+static void Simple2x(unsigned char *srcPtr, unsigned int srcPitch, unsigned char *dstPtr, unsigned int dstPitch, unsigned int width, unsigned int height)
+{
+	unsigned char *nextLine, *finish;
+	nextLine = dstPtr + dstPitch;
+	do
+	{
+		unsigned char *bP = (unsigned char *) srcPtr;
+		unsigned char *dP = (unsigned char *) dstPtr;
+		unsigned char *nL = (unsigned char *) nextLine;
+		unsigned char	 currentPixel;
+		finish		 = (unsigned char *) bP + width;
+		currentPixel = *bP++;
+		do
+		{
+			unsigned char color = currentPixel;
+			*(dP)	  = color;
+			*(dP + 1) = color;
+			*(nL)	  = color;
+			*(nL + 1) = color;
+			currentPixel = *bP++;
+			dP += 2;
+			nL += 2;
+		}
+		while ((unsigned char *) bP < finish);
+		srcPtr	 += srcPitch;
+		dstPtr	 += dstPitch << 1;
+		nextLine += dstPitch << 1;
+	}
+	while (--height);
+}
+
+/* Achieves a scanlike-effect. Not bad but not the intended look */
+void bitmap_scale(uint32_t startx, uint32_t starty, uint32_t viswidth, uint32_t visheight, uint32_t newwidth, uint32_t newheight,uint32_t pitchsrc,uint32_t pitchdest, uint8_t* restrict src, uint8_t* restrict dst)
+{
+    uint32_t W,H,ix,iy,x,y;
+    x=startx<<16;
+    y=starty<<16;
+    W=newwidth;
+    H=newheight/2;
+    ix=(viswidth<<16)/W;
+    iy=(visheight<<16)/H;
+
+    do 
+    {
+        uint8_t* restrict buffer_mem=&src[(y>>16)*pitchsrc];
+        W=newwidth; x=startx<<16;
+        do 
+        {
+            *dst++=buffer_mem[x>>16];
+            x+=ix;
+        } while (--W);
+        dst+=pitchdest;
+        y+=iy;
+    } while (--H);
+}
+
 void GameCoreTick(void) {
 	CoreProcInput();
-
-	SDL_LockSurface(screen);
-	memcpy(screen->pixels,screen_buffering,76800);
-
-	SDL_UnlockSurface(screen);
-
+	
+	#ifdef FORCE2X
+	Simple2x((unsigned char*)screen->pixels, screen->pitch, (unsigned char*)rl_screen->pixels, rl_screen->pitch, 320, 240);
+	SDL_Flip(rl_screen);
+	#elif defined(SCALING)
+	if (simple2x == 1)
+	{
+		Simple2x((unsigned char*)screen->pixels, screen->pitch, (unsigned char*)rl_screen->pixels, rl_screen->pitch, 320, 240);
+	}
+	else
+	{
+		bitmap_scale(0, 0, 320, 240, rl_screen->w, rl_screen->h, screen->pitch, rl_screen->pitch, (unsigned char*)screen->pixels, (unsigned char*)rl_screen->pixels);
+		//SDL_SoftStretch(screen, NULL, rl_screen, NULL);
+	}
+	SDL_Flip(rl_screen);
+	#else
 	SDL_Flip(screen);
+	#endif
 
+#ifndef NODELAY
 	if (gamespeed > 0)
 #ifdef _TINSPIRE
 		msleep(gamespeed * 10);
 #else
 		SDL_Delay(gamespeed * 10);
 #endif
+#endif
 
 	voiceon = 0;
 }
 
 void ShutDownCore(void) {
-#ifdef GP2X
-	zlExtShutDown();
-#endif
 }
 
 // SOUND SYSTEM
-char spath[128];
+// SOUND SYSTEM
+#ifdef SDLMIX_SOUND
+static Mix_Music *music = NULL;
+static  Mix_Chunk *d_sound[4];
+//Mix_Chunk *d_sound[8];
+static  Mix_Chunk *e_sound;
+#endif
 
-void LoadSound(void) 
-{
+void LoadSound(void) {
+	#ifdef SDLMIX_SOUND
+	d_sound[0] = Mix_LoadWAV("click.wav");
+	d_sound[1] = Mix_LoadWAV("beep.wav");
+	d_sound[2] = Mix_LoadWAV("order.wav");
+	d_sound[3] = Mix_LoadWAV("victory.wav");
+	/*
+	 * d_sound[4]=Mix_LoadWAV("data/s4.wav");
+	 * d_sound[5]=Mix_LoadWAV("data/s5.wav");
+	 * d_sound[6]=Mix_LoadWAV("data/s6.wav");
+	 * d_sound[7]=Mix_LoadWAV("data/s7.wav");
+	 */
+	PlayMusic(0);
+	#endif
 }
 
-void FreeSound(void) 
-{
+void FreeSound(void) {
+	#ifdef SDLMIX_SOUND
+	Uint8 i;
+
+	for (i = 0; i < 4; i++) {
+		Mix_FreeChunk(d_sound[i]);
+		d_sound[i] = NULL;
+	}
+
+	if (music != NULL) {
+		Mix_FreeMusic(music);
+		music = NULL;
+	}
+
+	e_sound = NULL;
+	
+	Mix_CloseAudio();
+	#endif
 }
 
-void PlayMusic(unsigned char itrack) 
-{
+void PlayMusic(unsigned char itrack) {
+	#ifdef SDLMIX_SOUND
+	if (itrack == 128)
+		Mix_PauseMusic();
+	else {
+		if (musicon)
+		{
+			if (music)
+			{
+				Mix_FreeMusic(music);
+			}
+			
+			switch (itrack)
+			{
+				case 0:
+				default:
+					music = Mix_LoadMUS("maincontrol.wav");
+				break;
+				case 1:
+					music = Mix_LoadMUS("datasmasher.wav");
+				break;
+				case 2:
+					music = Mix_LoadMUS("defense.wav");
+				break;
+			}
+			
+			Mix_PlayMusic(music, -1);
+		}
+	}
+	MusicPlaying = itrack;
+	#endif
 }
-void PlaySound(unsigned char ibank, signed char pan) 
-{
+void PlaySound(unsigned char ibank, signed char pan) {
+	#ifdef SDLMIX_SOUND
+	if (soundon) {
+		//	Mix_SetPanning(0,127,127); // according to SDL doc, this works only for 2 channels, not 1 channel like we use
+		//	/*
+		Mix_PlayChannel(-1, d_sound[ibank], 0);
+		//	*/
+		//printf("Played %d\n", ibank);
+	}
+	#endif
+}
+void PlaySoundEx(unsigned char ibank, signed char pan) {
+	//sprintf(spath,"%i.wav",ibank);
+	/*sprintf(spath, "data/e%i.wav", ibank);
+	Mix_SetPanning(0, 127, 127);
+	e_sound = Mix_LoadWAV(spath);
+	Mix_PlayChannel(-1, e_sound, 0);*/
 }
 
-void PlaySoundEx(unsigned char ibank, signed char pan) 
-{
-}
-
-void SetVolume(unsigned char ivolume) 
-{
+void SetVolume(unsigned char ivolume) {
+	#ifdef SDLMIX_SOUND
 	volume = ivolume;
+	#endif
+	//printf("sfx %d\n", Mix_Volume(0, -1));
+	//Mix_Volume(0,volume);
+	//Mix_VolumeMusic(volume);
 }

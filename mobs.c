@@ -12,7 +12,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <SDL/SDL.h>
+#include "zmath.h"
+#include "sblit.h"
 #include "vars.h"
 #include "gpu3d.h"
 
@@ -113,7 +115,7 @@ void MobModel(Uint8 i) {
 }
 
 void RenderMobs(void) {
-	Uint8 i, c;
+	Uint8 i;
 	for (i = 0; i < 128; i++)
 		if (mob[i][0] > 0)
 			if (zabs(mob[i][4] - cursorx) < 7 * 65536)

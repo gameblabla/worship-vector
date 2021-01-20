@@ -13,6 +13,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <SDL/SDL.h>
+#include "mapdata.h"
+#include "playeriteraction.h"
+#include "zmath.h"
+#include "sblit.h"
+#include "ssystem.h"
+#include "gpu3d.h"
 #include "vars.h"
 #include "sblit.h"
 
@@ -22,8 +29,17 @@ char tower_name[6][32] = { "MINIGUN", "ANTIAIR", "ARTILER", "SLOWRAY",
 };
 char speed_text[4][16] = { "FASTEST", "   FAST", " MEDIUM", "   SLOW" };
 char onoff_text[2][8] = { "OFF", " ON" };
-char menu_item[8][32] = { "   Return to Game   ", "   Game Speed       ",
-		"   Sound Effects    ", "   Music Enabled    ", "   Screen Blending  ",
+char menu_item[
+#ifdef BLENDING
+8
+#else
+7
+#endif
+][32] = { "   Return to Game   ", "   Game Speed       ",
+		"   Sound Effects    ", "   Music Enabled    ",
+		#ifdef BLENDING
+		"   Screen Blending  ",
+		#endif
 		"   Restart Game     ", "   Quit to Main Menu", "   Quit to OS       " };
 
 char cmc[5][5] = { "SCAN", "BUY", "SELL", " MAP", "MENU" };
@@ -43,15 +59,14 @@ Sint32 cm_dr1[5][4] = { { 244, 54, 306, 116 }, { 40, 190, 260, 210 }, { 60, 48,
 Uint8 mapcolor[20] = { 2, 1, 6, 11, 9, 14, 4, 0, 0, 12, 8, 7, 15, 15, 15, 15,
 		15, 15, 15, 15 };
 
-void RenderMap4(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1) {
-	Sint16 x, y, cx, cy, ix, iy, rx, ry;
+void RenderMap4(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1)
+{
+	Sint16 x, y, cx, cy, rx, ry;
 	Uint8 c, i;
-
+	Sint32 ii;
 	cx = (x1 + x0) / 2;
 	cy = (y1 + y0) / 2;
-
-	Sint32 ii;
-
+	
 	for (y = y0; y < y1; y++) {
 		ii = x0 + y * 320;
 		for (x = x0; x < x1; x++) {
@@ -104,7 +119,11 @@ void ProcMainMenu(void) {
 			}
 
 		if (dpad == 4)
+			#ifdef BLENDING
 			if (menuitem < 7) {
+			#else
+			if (menuitem < 6) {
+			#endif
 				PlaySound(0, 0);
 				menuitem++;
 				zl_vibro = 40;
@@ -117,10 +136,12 @@ void ProcMainMenu(void) {
 			if (dpad == 2)
 				gamespeed = (gamespeed + 1) % 4;
 			else if (dpad == 6)
+			{
 				if (gamespeed > 0)
 					gamespeed--;
 				else
 					gamespeed = 3;
+			}
 		}
 
 	if ((vbutton[0] == 1) | (vbutton[2] == 1))
@@ -146,24 +167,31 @@ void ProcMainMenu(void) {
 
 			zl_vibro = 125;
 			break;
+		#ifdef BLENDING
 		case 4: //Shader
 			screenblend = (screenblend + 1) % 2;
 			zl_vibro = 125;
 			break;
-
-		case 5: //Shader
+		#endif
+		
+		#ifndef BLENDING
+		#define OFFSET_BLEND 1
+		#else
+		#define OFFSET_BLEND 0
+		#endif
+		case 5-OFFSET_BLEND: //Shader
 			PlayMusic(128);
 			cursormode = 0;
 			ResetMap();
 			zl_vibro = 125;
 			break;
 
-		case 6:
+		case 6-OFFSET_BLEND:
 			PlayMusic(0);
 			NextGameMode = 4;
 			zl_vibro = 125;
 			break;
-		case 7: //Shut Down
+		case 7-OFFSET_BLEND: //Shut Down
 			NextGameMode = 6;
 			zl_vibro = 125;
 			break;
@@ -174,6 +202,7 @@ void ProcMainMenu(void) {
 
 void RenderGameGUI(void) {
 	Sint32 i, x, y, ii;
+	Uint8 GUIc;
 	for (x = 0; x < 6400; x++) {
 		screen_buffering[x] = NextColor2[screen_buffering[x]];
 	}
@@ -192,7 +221,7 @@ void RenderGameGUI(void) {
 			screen_buffering[x] = NextColor2[screen_buffering[x]];
 
 	}
-	Uint8 GUIc = 14 + 16 * (dpadpower);
+	GUIc = 14 + 16 * (dpadpower);
 
 	ii = 20 * 320;
 	for (x = 0; x < 210; x++) {
@@ -257,7 +286,7 @@ void RenderGameGUI(void) {
 
 	l_textstring = sprintf(s_textstring, "Funds");
 	s_drawtext(310 - l_textstring * 8, 6, GUIc);
-	l_textstring = sprintf(s_textstring, "%i", funds);
+	l_textstring = sprintf(s_textstring, "%li", funds);
 	s_drawtext(310 - l_textstring * 8, 22, 14);
 
 	l_textstring = sprintf(s_textstring, "Wave %i", wave);
@@ -302,11 +331,11 @@ void RenderGameGUI(void) {
 			}
 
 		if (cost > 0) {
-			l_textstring = sprintf(s_textstring, "%i GP", cost);
+			l_textstring = sprintf(s_textstring, "%li GP", cost);
 			s_drawtext(dr1[2] - 8 - l_textstring * 8, dr1[1] + 2, 14);
 
 			if (cursorvisual == 2)
-				l_textstring = sprintf(s_textstring, "Turret Mount", cost);
+				l_textstring = sprintf(s_textstring, "Turret Mount");
 			else
 				l_textstring = sprintf(s_textstring, "%s",
 						tower_name[towermenu]);
@@ -350,7 +379,7 @@ void RenderGameGUI(void) {
 			l_textstring = sprintf(s_textstring, "SELL FOR");
 			s_drawtext(dr1[0] + 8, dr1[1] + 2, 14);
 
-			l_textstring = sprintf(s_textstring, "%i GP", cost);
+			l_textstring = sprintf(s_textstring, "%li GP", cost);
 			s_drawtext(dr1[2] - 8 - l_textstring * 8, dr1[1] + 2, 14);
 		} else if (count / 10 % 2) {
 			l_textstring = sprintf(s_textstring, "Incorrect Object");
@@ -366,7 +395,12 @@ void RenderGameGUI(void) {
 		DrawRect(x - 20, y - 15, x + 20, y + 15, 15);
 		break;
 	case 4: //Menu
+		#ifdef BLENDING
 		for (i = 0; i < 8; i++)
+		#else
+		for (i = 0; i < 7; i++)
+		#endif
+		{
 			if (cursormodecount > 5 + i) {
 				l_textstring = sprintf(s_textstring, "%s", menu_item[i]);
 				if (i == menuitem)
@@ -375,6 +409,7 @@ void RenderGameGUI(void) {
 					s_drawtext(dr1[0] + 2, dr1[1] + 2 + i * 16, 8);
 
 			}
+		}
 		if (cursormodecount > 15) {
 			DrawRect(dr1[0] + 2, dr1[1] + 2 + menuitem * 16, dr1[2] - 2,
 					dr1[1] + 18 + menuitem * 16, 14);
@@ -387,10 +422,10 @@ void RenderGameGUI(void) {
 
 			l_textstring = sprintf(s_textstring, "%s", onoff_text[musicon]);
 			s_drawtext(dr1[1] + 140, dr1[1] + 50, 9);
-
+#ifdef BLENDING
 			l_textstring = sprintf(s_textstring, "%s", onoff_text[screenblend]);
 			s_drawtext(dr1[1] + 140, dr1[1] + 66, 9);
-
+#endif
 		}
 		ProcMainMenu();
 

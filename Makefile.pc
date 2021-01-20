@@ -1,0 +1,59 @@
+TOOLCHAIN_SYSROOT = /usr
+CC = clang
+
+DEBUG=1
+
+EXE = worship.bin
+
+CFLAGS = -DLINUX -O2 -pg -Weverything -ffunction-sections -ffast-math
+CFLAGS += -D__BUILDDATE=\"$(shell date +%d-%b-%Y)\" -DSDLMIX_SOUND -DSCALING
+LDFLAGS = -flto -lgcov -lSDL -lSDL_mixer
+INCLUDE = -I$(TOOLCHAIN_SYSROOT)/include -I$(TOOLCHAIN_SYSROOT)/include/SDL
+
+ifdef DEBUG
+ CFLAGS += -g
+else
+ CFLAGS += -G0
+endif
+
+STRIP = $(HOST)strip
+
+SRC = 	gameframe.c \
+	gamestate.c \
+	initgame.c \
+	mapdata.c \
+	playeriteraction.c \
+	renderobjects.c \
+	vars.c \
+	gamegui.c \
+	gamestep.c \
+	main.c \
+	mobs.c \
+	postrender.c \
+	sblit.c \
+	vlines.c \
+	zmath.c \
+	gameloop.c \
+	gpu3d.c \
+	mainmenu.c \
+	palette.c \
+	rendermap.c \
+	ssystem.c \
+	waveai.c
+CFLAGS += $(DEFS)
+
+OBJ = $(SRC:.c=.o)
+
+all : $(SRC) $(EXE)
+
+$(EXE): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) $(LIB) -o $@ $(LDFLAGS)
+ifndef DEBUG
+	$(STRIP) $(EXE)
+endif
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+clean:
+	rm -rf $(OBJ) $(EXE)

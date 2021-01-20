@@ -12,11 +12,17 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <SDL/SDL.h>
+#include "vlines.h"
+#include "zmath.h"
+#include "sblit.h"
+#include "ssystem.h"
 #include "vars.h"
 #include "mobs.h"
 
 void NewWave(void) {
+
+	Uint8 x, y, n, i;
 	PlaySound(3, 0);
 	wavedelay = 0;
 	if (wave % 10 == 0)
@@ -25,8 +31,6 @@ void NewWave(void) {
 
 	wavemobleft = iwavedata[wave][0];
 	mobdelay = iwavedata[wave][7];
-
-	Uint8 x, y, n, i;
 
 	for (y = 0; y < 64; y++)
 		for (x = 0; x < 64; x++)
@@ -96,6 +100,7 @@ void TrySpawn(void) {
 	Sint32 ccx = spawnx, ccy = spawny;
 
 	if (wavemobleft)
+	{
 		if (mobdelay) {
 			mobdelay--;
 		} else {
@@ -167,6 +172,7 @@ void TrySpawn(void) {
 
 			SpawnMob();
 		}
+	}
 }
 
 Uint8 rangetower[5] = { 3, 4, 4, 4, 5 };

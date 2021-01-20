@@ -13,6 +13,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "playeriteraction.h"
+#include "gamegui.h"
 #include "vars.h"
 #include "rendermap.h"
 #include "renderobjects.h"

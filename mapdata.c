@@ -580,7 +580,7 @@ void ResetMap(void) {
 								if (mapz[x - 1][y - 1] == 4)
 									if (mapz[x][y - 1] == 4)
 										if (mapz[x - 1][y] == 4) {
-											mapz[x][y] = 6 + (x + y) & 7;
+											mapz[x][y] = (6 + (x + y)) & 7;
 										}
 
 	for (y = 1; y < 63; y++)
@@ -603,7 +603,7 @@ void ResetMap(void) {
 								if (mapz[x - 1][y - 1] == 6)
 									if (mapz[x][y - 1] == 6)
 										if (mapz[x - 1][y] == 6) {
-											mapz[x][y] = 9 + (x + y) & 7;
+											mapz[x][y] = (9 + (x + y)) & 7;
 										}
 
 	for (y = 1; y < 63; y++)

@@ -1472,7 +1472,7 @@ void DrawLine2(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1, Uint8 color) {
 }
 
 void DarkRect(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1) {
-	Sint32 x, y, i, ii;
+	Sint32 x, y, ii;
 	for (y = y0; y <= y1; y++) {
 		ii = x0 + y * 320;
 		for (x = x0; x <= x1; x++) {
@@ -1481,11 +1481,10 @@ void DarkRect(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1) {
 		}
 
 	}
-
 }
 
 void DrawRect(Sint16 xx0, Sint16 yy0, Sint16 xx1, Sint16 yy1, Uint8 color) {
-	Sint32 x, y, i, ii, x0, x1, y0, y1;
+	Sint32 i, ii, x0, x1, y0, y1;
 	x0 = xx0;
 	x1 = xx1;
 	y0 = yy0;

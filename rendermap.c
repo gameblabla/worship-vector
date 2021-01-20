@@ -29,11 +29,12 @@ void RenderCell(Sint8 x, Sint8 y) {
 		if (mapunlock[x / 8][y / 8] > wave + 1)
 			m = 100;
 		else if (mapunlock[x / 8][y / 8] > wave)
+		{
 			if (map[x][y] == 10)
 				m = 97;
 			else
 				m = 98;
-
+		 }
 	}
 	switch (m) {
 	case 0: //grass
@@ -112,7 +113,7 @@ void RenderCell(Sint8 x, Sint8 y) {
 		zlvertex = 3;
 		zlpoint((x) * 65536, -5000 + mapz[x][y + 1] * 10000, -(y + 1) * 65536);
 		if (vbufferz[2] > 0) {
-			Uint8 c = 11;
+			c = 11;
 			DrawLine2(vbufferx[0], vbuffery[0], vbufferx[1], vbuffery[1], c);
 			DrawLine2(vbufferx[2], vbuffery[2], vbufferx[1], vbuffery[1], c);
 			DrawLine2(vbufferx[2], vbuffery[2], vbufferx[3], vbuffery[3], c);
@@ -154,7 +155,7 @@ void RenderCell(Sint8 x, Sint8 y) {
 		zlvertex = 3;
 		zlpoint((x) * 65536, -5000 + mapz[x][y + 1] * 10000, -(y + 1) * 65536);
 		if (vbufferz[2] > 0) {
-			Uint8 c = 14;
+			c = 14;
 			DrawLine2(vbufferx[0], vbuffery[0], vbufferx[1], vbuffery[1], c);
 			DrawLine2(vbufferx[2], vbuffery[2], vbufferx[1], vbuffery[1], c);
 			DrawLine2(vbufferx[2], vbuffery[2], vbufferx[3], vbuffery[3], c);
@@ -164,7 +165,7 @@ void RenderCell(Sint8 x, Sint8 y) {
 		break;
 	case 6: // lava
 
-		wwx = 65535 - (count * 3555) & 65535;
+		wwx = (65535 - (count * 3555)) & 65535;
 
 		zlvertex = 0;
 		zlpoint((x) * 65536, -10000 + mapz[x][y] * 10000, -(y) * 65536 - wwx);
