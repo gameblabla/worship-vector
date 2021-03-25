@@ -14,8 +14,7 @@
  */
 
 #include "math.h"
-
-//#include "zmath.h"
+#include "zmath.h"
 #include "stdlib.h"
 #include "vars.h"
 //#define FPDIV(x,y)	((((x)<<12)/((y)))>>4)

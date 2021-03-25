@@ -13,7 +13,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <SDL/SDL.h>
 #include "mapdata.h"
 #include "playeriteraction.h"
 #include "zmath.h"
@@ -22,7 +21,11 @@
 #include "gpu3d.h"
 #include "vars.h"
 #include "sblit.h"
+#ifndef LINUX
 #include "printf.h"
+#else
+#include <stdio.h>
+#endif
 
 const char tower_name[6][8] = { "MINIGUN", "ANTIAIR", "ARTILER", "SLOWRAY",
 		"SNIPER ", "PLANT"

@@ -12,7 +12,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include "ssystem.h"
 extern Uint32 fastrange(Sint32 argx, Sint32 argy);
 extern Sint32 calcturn(Sint32 angle0, Sint32 angle1);
 extern Sint32 zabs(Sint32 val);

@@ -12,16 +12,29 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef LINUX
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#else
 #include <windows.h>
+#endif
 #include "ssystem.h"
 #include "gameloop.h"
 #include "initgame.h"
 #include "mapdata.h"
 
+#ifdef LINUX
+void _start()
+#else
 void WinMainCRTStartup(VOID)
+#endif
 //int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	InitGameCore();
 	ResetMap();
 	StartGameLoop();
+	#ifdef LINUX
+	_exit(0);
+	#endif
 }

@@ -15,7 +15,11 @@
 
 #include "vars.h"
 
+#ifdef LINUX
+uint8_t* screen_buffering;
+#else
 uint8_t screen_buffering[320*240];
+#endif
 Uint8 palette[256][3]; //768 bytes
 Uint8 button[12], vbutton[12], buttonpressed;
 Sint8 dpad = -1, dpadi;

@@ -12,8 +12,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdint.h>
 
-#include <SDL/SDL.h>
+#define Uint8 uint8_t
+#define Uint16 uint16_t
+#define Uint32 uint32_t
+#define Uint64 uint64_t
+#define Sint8 int8_t
+#define Sint16 int16_t
+#define Sint32 int32_t
+#define Sint64 int64_t
 
 extern void InitGameCore(void);
 extern void GameCoreTick(void);

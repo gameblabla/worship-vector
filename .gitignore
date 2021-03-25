@@ -5,3 +5,4 @@
 *.lib
 *.LIB
 worship.exe
+*.elf

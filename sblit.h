@@ -12,6 +12,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "ssystem.h"
 
 extern void DrawLine2(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color);
 extern void DrawLine(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color);

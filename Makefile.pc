@@ -1,0 +1,47 @@
+CC = gcc
+EXE = min.elf
+
+CFLAGS  = -m32 -DLINUX -fno-plt -fno-PIC -Os -ffast-math -fno-stack-check -fno-stack-protector -mno-stack-arg-probe
+STRIP = $(HOST)strip
+
+SRC = 	mapdata.c \
+	playeriteraction.c \
+	renderobjects.c \
+	vars.c \
+	gamegui.c \
+	main.c \
+	mobs.c \
+	postrender.c \
+	sblit.c \
+	vlines.c \
+	zmath.c \
+	gameloop.c \
+	gpu3d.c \
+	rendermap.c \
+	ssystem_lin.c \
+	waveai.c
+CFLAGS += $(DEFS)
+FINAL_EXE = worship.elf
+
+LDFLAGS = -lSDL2
+
+OBJ = $(SRC:.c=.o)
+
+all : $(SRC) $(EXE) $(FINAL_EXE)
+
+$(FINAL_EXE): $(EXE)
+	strip -s -R .comment -R .gnu.version $^
+	sstrip -z $^
+	cp unpack.header $@
+	xz -ce9 $^ >> $@
+	chmod +x $@
+	rm $(EXE)
+
+$(EXE): $(OBJ)  
+	ld -s -melf_i386 -dynamic-linker /lib/ld-linux.so.2 $(OBJ) /usr/lib32/libSDL2.so /usr/lib32/libc.so -o $(EXE)
+	
+$(OBJ_C) : %.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+clean:
+	rm -rf $(OBJ) $(EXE) $(FINAL_EXE)
