@@ -23,10 +23,10 @@
 void NewWave(void) {
 
 	Uint8 x, y, n, i;
-	PlaySound(3, 0);
+	PlaySound_game(3, 0);
 	wavedelay = 0;
 	if (wave % 10 == 0)
-		PlayMusic(1 + (wave / 10) % 2);
+		PlayMusic_game(1 + (wave / 10) % 2);
 	wave++;
 
 	wavemobleft = iwavedata[wave][0];
@@ -192,13 +192,15 @@ void MobAi(void) {
 				mob[i][0] = 0;
 				for (ii = 0; ii < 76800; ii++)
 					screen_buffering[ii] = 4;
-				zl_vibro = 125;
 
-				PlaySound(1, 0);
+
+				PlaySound_game(1, 0);
 				lives--;
 				if (lives == 0) {
-					PlayMusic(0);
-					NextGameMode = 4;
+					PlayMusic_game(0);
+					//NextGameMode = 4;
+					GameLoopEnabled = 0;
+					// Gameover, gameblabla
 				}
 			}
 
@@ -453,7 +455,6 @@ void MobAi(void) {
 					mob[i][0] = 0;
 					funds += iwavedata[wave][5];
 //DIEEEEEEEEEE
-					zl_vibro = 125;
 
 					newvline[0] = 20;
 					newvline[1] = mob[i][1];

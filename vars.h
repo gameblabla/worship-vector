@@ -15,7 +15,7 @@
 #include <SDL/SDL.h>
 #include "types.h"
 
-extern Uint8* screen_buffering;
+extern Uint8 screen_buffering[320*240];
 //#define screen_buffering screen->pixels
 
 extern Uint8 palette[256][3];
@@ -32,13 +32,11 @@ extern Uint8 volume, volumedelay, volumepower;
 extern Uint8 MusicPlaying, voiceon;
 
 extern Uint8 NextColor0[256], NextColor2[256];
-extern Sint8 zl_vibro;
-extern Sint32 zl_gsensor[6];
 
 extern Uint32 GameMode, NextGameMode, GameModeEndCount;
 
-extern Sint32 zlvertex, vbufferx[1024], vbuffery[1024], vbufferz[1024],
-		vvis[1024];
+extern Sint32 zlvertex, vbufferx[8], vbuffery[8], vbufferz[8],
+		vvis[8];
 
 extern Sint32 camera[6], tcamera[6];
 
@@ -51,7 +49,7 @@ extern Sint32 turret0[64][64], turret1[64][64];
 extern Uint8 wave;
 extern Sint32 funds;
 
-extern char s_textstring[192];
+extern char s_textstring[16];
 extern Sint8 l_textstring;
 extern Uint8 dpadpower;
 

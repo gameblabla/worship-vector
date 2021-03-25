@@ -15,15 +15,15 @@
 
 #include <SDL/SDL.h>
 
-extern Uint8 InitGameCore(void);
+extern void InitGameCore(void);
 extern void GameCoreTick(void);
 extern void ShutDownCore(void);
 
-extern void PlayMusic(unsigned char itrack);
-extern void PlaySound(unsigned char ibank, signed char pan);
-extern void PlaySoundEx(unsigned char ibank, signed char pan);
+extern void PlayMusic_game(unsigned char itrack);
+extern void PlaySound_game(unsigned char ibank, signed char pan);
+extern void PlaySoundEx_game(unsigned char ibank, signed char pan);
 extern void SetVolume(unsigned char volume);
-extern void LoadSound(void);
+extern void LoadSound_game(void);
 void FreeSound(void);
 extern void Terminate(void);
 

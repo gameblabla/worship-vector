@@ -14,12 +14,32 @@
  */
 
 #include "ssystem.h"
-#include "gameframe.h"
 #include "vars.h"
+#include "gpu3d.h"
+
+#include "playeriteraction.h"
+#include "gamegui.h"
+#include "vars.h"
+#include "rendermap.h"
+#include "renderobjects.h"
 
 void StartGameLoop(void) {
-	while (GameLoopEnabled) {
-		GameFrame();
+	while (GameLoopEnabled)
+	{
+		zlclearscene();
+		for (uint32_t i = 0; i < 76800; i++)
+		{
+			screen_buffering[i] = 0;
+		}
+		
+		PlayerIteraction();
+
+		RenderMap();
+		RenderCursor();
+		RenderObjects();
+
+		RenderGameGUI();
+		
 		GameCoreTick();
 		count++;
 	}

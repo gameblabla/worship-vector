@@ -13,9 +13,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-extern void DrawLine2(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1, Uint8 color);
-extern void DrawLine(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1, Uint8 color);
-extern void DrawRect(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1, Uint8 color);
-extern void DarkRect(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1);
+extern void DrawLine2(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color);
+extern void DrawLine(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color);
+extern void DrawRect(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color);
+extern void DarkRect(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1);
 
-extern void s_drawtext(Sint16 x, Sint16 y, Uint8 c);
+extern void s_drawtext(Uint16 x, Uint16 y, Uint8 c);

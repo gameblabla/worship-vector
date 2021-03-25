@@ -19,9 +19,9 @@
 #include "vlines.h"
 #include "waveai.h"
 
-Uint16 tower_cost[6] = { 20, 30, 40, 50, 250, 50 };
+const Uint8 tower_cost[6] = { 20, 30, 40, 50, 250, 50 };
 
-Uint16 sell_cost[7] = { 5, 16, 24, 32, 40, 200, 25 };
+const Uint8 sell_cost[7] = { 5, 16, 24, 32, 40, 200, 25 };
 
 Sint32 cm_cam[5][6] = { { 0, 585536, -200000, -812, 0, 0 }, //scan
 		{ 0, 385536, -220000, -612, 0, 0 }, //buy
@@ -30,7 +30,7 @@ Sint32 cm_cam[5][6] = { { 0, 585536, -200000, -812, 0, 0 }, //scan
 		{ -200000, 285536, -400000, -412, 400, 0 } //menu
 
 };
-Sint32 cm_speed[5] = { 10000, 8000, 8000, 20000, 0 };
+const Uint16 cm_speed[5] = { 10000, 8000, 8000, 20000, 0 };
 Uint8 lastcursormode;
 
 Sint8 cx, cy; //global
@@ -154,8 +154,7 @@ void PlayerAction(void) {
 				newvline[12] = 2000;
 				newvline[13] = -8000;
 				SpawnLine();
-				PlaySound(2, 0);
-				zl_vibro = 126;
+				PlaySound_game(2, 0);
 
 			}
 	} else if (cursorvisual == 3) {
@@ -231,8 +230,7 @@ void PlayerAction(void) {
 				newvline[12] = 2000;
 				newvline[13] = -8000;
 				SpawnLine();
-				PlaySound(2, 0);
-				zl_vibro = 126;
+				PlaySound_game(2, 0);
 
 			}
 	}
@@ -241,7 +239,7 @@ void PlayerAction(void) {
 		cost = sell_cost[map[cx][cy] - 11];
 
 		if ((vbutton[0] == 1) | (vbutton[2] == 1)) {
-			PlaySound(1, 0);
+			PlaySound_game(1, 0);
 			funds += cost;
 			if (map[cx][cy] == 11)
 				map[cx][cy] = 2;
@@ -314,8 +312,6 @@ void PlayerAction(void) {
 			newvline[12] = 2000;
 			newvline[13] = -8000;
 			SpawnLine();
-			zl_vibro = 126;
-
 		}
 	}
 
@@ -330,10 +326,6 @@ void PlayerIteraction(void) {
 	camera[3] = +cm_cam[cursormode][3];
 	camera[4] = +cm_cam[cursormode][4];
 	camera[5] = +cm_cam[cursormode][5];
-
-	camera[5] += 2 * zl_gsensor[3];
-//camera[4]+=2*zl_gsensor[5];
-	camera[3] += 2 * zl_gsensor[4];
 
 	cspeed = cm_speed[cursormode];
 
@@ -362,31 +354,28 @@ void PlayerIteraction(void) {
 
 	lastcursormode = cursormode;
 	if (vbutton[5] == 1) {
-		PlaySound(0, 0);
+		PlaySound_game(0, 0);
 		cursormode = (cursormode + 1) % 5;
-		zl_vibro = 100;
 	}
 	if (vbutton[4] == 1)
 	{
 		if (cursormode > 0) {
-			PlaySound(0, 0);
+			PlaySound_game(0, 0);
 			cursormode--;
-			zl_vibro = 100;
 		} else {
 			cursormode = 4;
-			PlaySound(0, 0);
+			PlaySound_game(0, 0);
 		}
 	}
 	if (vbutton[8] == 1) {
-		PlaySound(0, 0);
+		PlaySound_game(0, 0);
 		cursormode = 4;
 		lastcursormode = 0;
 	} //Debug exit
 
 	if (lastcursormode != cursormode) {
-		/*for (i = 0; i < 76800; i++)
-			screen_buffering[i] = 15;*/
-		memset(screen_buffering, 15, 76800);
+		for (U32 i = 0; i < 76800; i++)
+			screen_buffering[i] = 15;
 		cursormodecount = 0;
 	} else
 		cursormodecount++;

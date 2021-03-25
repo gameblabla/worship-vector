@@ -37,7 +37,7 @@ void SpawnMob(void) {
 		mob[i][10] = 0; //hurt
 
 	}
-	zl_vibro = 10;
+
 
 }
 

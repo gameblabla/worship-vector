@@ -12,23 +12,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <windows.h>
 #include "ssystem.h"
 #include "gameloop.h"
 #include "initgame.h"
+#include "mapdata.h"
 
-#ifdef __MACOS__
-int SDL_main (int argc, char *argv[])
-#else
-int main (int argc, char *argv[])
-#endif
+void WinMainCRTStartup(VOID)
+//int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	if (InitGameCore() == 1)
-	{
-		InitGame();
-		StartGameLoop();
-	}
-
-	Terminate();
-
-	return 0;
+	InitGameCore();
+	ResetMap();
+	StartGameLoop();
 }

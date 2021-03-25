@@ -15,7 +15,7 @@
 
 #include "vars.h"
 
-Uint8* screen_buffering;
+uint8_t screen_buffering[320*240];
 Uint8 palette[256][3]; //768 bytes
 Uint8 button[12], vbutton[12], buttonpressed;
 Sint8 dpad = -1, dpadi;
@@ -29,14 +29,10 @@ Uint8 GameLoopEnabled = 1, voiceon;
 Uint8 volume = 127, volumedelay = 0, volumepower = 5;
 
 Uint8 MusicPlaying = 128;
-Sint8 zl_vibro = -126;
-Sint32 zl_gsensor[6];
 
-Uint8 NextColor0[256], NextColor2[256];
+//Uint32 GameMode = 4, NextGameMode = 4, GameModeEndCount = 0;
 
-Uint32 GameMode = 4, NextGameMode = 4, GameModeEndCount = 0;
-
-Sint32 zlvertex, vbufferx[1024], vbuffery[1024], vbufferz[1024], vvis[1024];
+Sint32 zlvertex, vbufferx[8], vbuffery[8], vbufferz[8], vvis[8];
 
 Sint32 camera[6], tcamera[6];
 
@@ -51,7 +47,7 @@ Sint32 funds;
 
 Uint8 dpadpower;
 
-char s_textstring[192];
+char s_textstring[16];
 Sint8 l_textstring;
 
 Uint8 cursorvisual, menuitem, towermenu;
@@ -166,5 +162,3 @@ Sint32 iwavedata[100][8] =
 		};
 
 Uint8 lives;
-
-Sint32 debug_v[16];

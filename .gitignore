@@ -2,3 +2,6 @@
 *.tns
 *.elf
 *.zip
+*.lib
+*.LIB
+worship.exe
