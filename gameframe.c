@@ -18,10 +18,8 @@
 #include "postrender.h"
 #include "gamestate.h"
 
-void GameFrame(void) {
-
+void GameFrame(void) 
+{
 	PostRender();
 	ProcGameState();
-
 }
-;
