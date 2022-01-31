@@ -21,11 +21,18 @@
 #include "gpu3d.h"
 #include "vars.h"
 #include "sblit.h"
-#ifndef LINUX
-#include "printf.h"
-#else
 #include <stdio.h>
+
+/*
+#ifdef DREAMCAST
+extern int my_sprintf(char * buf, const char * fmt, ...);
+#define SPRINTF_DEFINE my_sprintf
+#else
+#define SPRINTF_DEFINE sprintf
 #endif
+*/
+extern int tfp_sprintf(char *str, const char *format, ...);
+#define SPRINTF_DEFINE sprintf
 
 const char tower_name[6][8] = { "MINIGUN", "ANTIAIR", "ARTILER", "SLOWRAY",
 		"SNIPER ", "PLANT"
@@ -34,17 +41,13 @@ const char tower_name[6][8] = { "MINIGUN", "ANTIAIR", "ARTILER", "SLOWRAY",
 const char speed_text[4][8] = { "FASTEST", "FAST", "MEDIUM", "SLOW" };
 const char onoff_text[2][8] = { "OFF", " ON" };
 const char menu_item[
-#ifdef BLENDING
-7
-#else
-6
-#endif
-][15] = { "RETURN TO GAME", "GAME SPEED",
+5
+][15] = { "GAME", "GAME SPEED",
 		"SOUND EFFECTS", "MUSIC ENABLED",
 		#ifdef BLENDING
 		"SCREEN BLENDING",
 		#endif
-		"RESTART GAME", "QUIT TO OS"};
+		"RESTART GAME"};
 
 const char cmc[5][5] = { "SCAN", "BUY", "SELL", " MAP", "MENU" };
 
@@ -72,7 +75,7 @@ void RenderMap4(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1)
 	cy = (y1 + y0) / 2;
 	
 	for (y = y0; y < y1; y++) {
-		ii = x0 + y * 320;
+		ii = x0 + y * SCREEN_WIDTH_GAME;
 		for (x = x0; x < x1; x++) {
 			c = 0;
 
@@ -98,16 +101,16 @@ void RenderMap4(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1)
 				if (ry > y0)
 					if (rx < x1)
 						if (ry < y1) {
-							ii = rx + 320 * ry;
+							ii = rx + SCREEN_WIDTH_GAME * ry;
 							c = mob[i][1];
-							screen_buffering[ii + 321] = c;
-							screen_buffering[ii + 320] = c;
-							screen_buffering[ii + 319] = c;
+							screen_buffering[ii + SCREEN_WIDTH_GAME+1] = c;
+							screen_buffering[ii + SCREEN_WIDTH_GAME] = c;
+							screen_buffering[ii + SCREEN_WIDTH_GAME-1] = c;
 							screen_buffering[ii + 1] = c;
 							screen_buffering[ii - 1] = c;
-							screen_buffering[ii - 321] = c;
-							screen_buffering[ii - 320] = c;
-							screen_buffering[ii - 319] = c;
+							screen_buffering[ii - SCREEN_WIDTH_GAME+1] = c;
+							screen_buffering[ii - SCREEN_WIDTH_GAME] = c;
+							screen_buffering[ii - SCREEN_WIDTH_GAME-1] = c;
 
 						}
 		}
@@ -126,7 +129,7 @@ void ProcMainMenu(void) {
 			#ifdef BLENDING
 			if (menuitem < 6) {
 			#else
-			if (menuitem < 5) {
+			if (menuitem < 4) {
 			#endif
 				PlaySound_game(0, 0);
 				menuitem++;
@@ -190,13 +193,6 @@ void ProcMainMenu(void) {
 
 			break;
 
-		case 6-OFFSET_BLEND:
-		//case 7-OFFSET_BLEND: //Shut Down
-			//NextGameMode = 6;
-			GameLoopEnabled = 0;
-
-			break;
-
 		}
 
 }
@@ -207,42 +203,42 @@ void RenderGameGUI(void) {
 
 	GUIc = 14 + 16 * (dpadpower);
 
-	ii = 20 * 320;
+	ii = 20 * SCREEN_WIDTH_GAME;
 	for (x = 0; x < 210; x++) {
 		screen_buffering[ii - 640] = 0;
 		screen_buffering[ii] = 0;
-		screen_buffering[ii + 320] = GUIc;
+		screen_buffering[ii + SCREEN_WIDTH_GAME] = GUIc;
 		ii++;
 	}
 	for (x = 210; x < 230; x++) {
 		screen_buffering[ii - 640] = 0;
 		screen_buffering[ii] = 0;
-		screen_buffering[ii + 320] = GUIc;
-		ii += 321;
+		screen_buffering[ii + SCREEN_WIDTH_GAME] = GUIc;
+		ii += SCREEN_WIDTH_GAME+1;
 	}
-	for (x = 230; x < 320; x++) {
+	for (x = 230; x < SCREEN_WIDTH_GAME; x++) {
 		screen_buffering[ii - 640] = 0;
 		screen_buffering[ii] = 0;
-		screen_buffering[ii + 320] = GUIc;
+		screen_buffering[ii + SCREEN_WIDTH_GAME] = GUIc;
 		ii++;
 	}
 
-	ii = 239 * 320;
+	ii = 239 * SCREEN_WIDTH_GAME;
 	for (x = 0; x < 20; x++) {
 		screen_buffering[ii] = 0;
-		screen_buffering[ii - 320] = GUIc;
-		ii -= 319;
+		screen_buffering[ii - SCREEN_WIDTH_GAME] = GUIc;
+		ii -= SCREEN_WIDTH_GAME-1;
 	}
-	ii += 320;
+	ii += SCREEN_WIDTH_GAME;
 	for (x = 20; x < 300; x++) {
 		screen_buffering[ii] = 0;
-		screen_buffering[ii - 320] = GUIc;
+		screen_buffering[ii - SCREEN_WIDTH_GAME] = GUIc;
 		ii++;
 	}
-	for (x = 300; x < 320; x++) {
+	for (x = 300; x < SCREEN_WIDTH_GAME; x++) {
 		screen_buffering[ii] = 0;
-		screen_buffering[ii - 320] = GUIc;
-		ii += 321;
+		screen_buffering[ii - SCREEN_WIDTH_GAME] = GUIc;
+		ii += SCREEN_WIDTH_GAME+1;
 	}
 
 //////
@@ -250,17 +246,17 @@ void RenderGameGUI(void) {
 		ii = 240 + x;
 		for (y = 0; y <= x; y++) {
 			screen_buffering[ii] = 0;
-			ii += 320;
+			ii += SCREEN_WIDTH_GAME;
 		}
 	}
 	for (y = 0; y < 20; y++) {
-		ii = 260 + y * 320;
-		for (x = 260; x < 320; x++)
+		ii = 260 + y * SCREEN_WIDTH_GAME;
+		for (x = 260; x < SCREEN_WIDTH_GAME; x++)
 			screen_buffering[ii++] = 0;
 	}
 
 	for (x = 0; x < 5; x++) {
-		l_textstring = sprintf(s_textstring, "%s", cmc[x]);
+		l_textstring = SPRINTF_DEFINE(s_textstring, "%s", cmc[x]);
 		if (cursormode == x)
 			s_drawtext(10 + 40 * x, 2, 14);
 		else
@@ -268,22 +264,22 @@ void RenderGameGUI(void) {
 	}
 	DrawRect(10 + 40 * cursormode, 2, 50 + 40 * cursormode, 18, 15);
 
-	l_textstring = sprintf(s_textstring, "FUNDS");
+	l_textstring = SPRINTF_DEFINE(s_textstring, "FUNDS");
 	s_drawtext(310 - l_textstring * 8, 6, GUIc);
-	l_textstring = sprintf(s_textstring, "%i", funds);
+	l_textstring = SPRINTF_DEFINE(s_textstring, "%i", funds);
 	s_drawtext(310 - l_textstring * 8, 22, 14);
 
-	l_textstring = sprintf(s_textstring, "WAVE %i", wave);
+	l_textstring = SPRINTF_DEFINE(s_textstring, "WAVE %i", wave);
 	s_drawtext(30, 222, GUIc - 1);
 
 	if (wavedelay) {
-		l_textstring = sprintf(s_textstring, "NEXT WAVE IN %i",
+		l_textstring = SPRINTF_DEFINE(s_textstring, "NEXT WAVE IN %i",
 				1 + wavedelay / 30);
 		s_drawtext(16, 24, 15);
 
 	}
 
-	l_textstring = sprintf(s_textstring, "%i LIVES", lives);
+	l_textstring = SPRINTF_DEFINE(s_textstring, "%i LIVES", lives);
 	s_drawtext(290 - l_textstring * 8, 222, GUIc - 10);
 
 	for (x = 0; x < 4; x++) {
@@ -307,21 +303,21 @@ void RenderGameGUI(void) {
 	case 1: //build
 		for (i = 0; i < 6; i++)
 			if (cursormodecount > 5 + i) {
-				l_textstring = sprintf(s_textstring, "%s", tower_name[i]);
+				l_textstring = SPRINTF_DEFINE(s_textstring, "%s", tower_name[i]);
 				if (i == towermenu)
-					s_drawtext(dr[0] + 2, dr[1] + 18 + i * 16, 15);
+					s_drawtext(dr[0] + 2 - 40, dr[1] + 18 + i * 16, 15);
 				else
-					s_drawtext(dr[0] + 2, dr[1] + 18 + i * 16, 8);
+					s_drawtext(dr[0] + 2 - 40, dr[1] + 18 + i * 16, 8);
 			}
 
 		if (cost > 0) {
-			l_textstring = sprintf(s_textstring, "%i GP", cost);
+			l_textstring = SPRINTF_DEFINE(s_textstring, "%i GP", cost);
 			s_drawtext(dr1[2] - 8 - l_textstring * 8, dr1[1] + 2, 14);
 
 			if (cursorvisual == 2)
-				l_textstring = sprintf(s_textstring, "TURRET MOUNT");
+				l_textstring = SPRINTF_DEFINE(s_textstring, "TURRET MOUNT");
 			else
-				l_textstring = sprintf(s_textstring, "%s",
+				l_textstring = SPRINTF_DEFINE(s_textstring, "%s",
 						tower_name[towermenu]);
 
 			s_drawtext(dr1[0] + 8, dr1[1] + 2, 14);
@@ -348,11 +344,11 @@ void RenderGameGUI(void) {
 					dr[1] + 34 + towermenu * 16, 14);
 
 			if (towermenu > 0) {
-				l_textstring = sprintf(s_textstring, "Y");
+				l_textstring = SPRINTF_DEFINE(s_textstring, "Y");
 				s_drawtext(dr[2] - 16, dr[1] + 2, 14);
 			}
 			if (towermenu < 5) {
-				l_textstring = sprintf(s_textstring, "B");
+				l_textstring = SPRINTF_DEFINE(s_textstring, "B");
 				s_drawtext(dr[2] - 16, dr[3] - 18, 14);
 			}
 		}
@@ -360,13 +356,13 @@ void RenderGameGUI(void) {
 		break;
 	case 2: //sell
 		if (cost) {
-			l_textstring = sprintf(s_textstring, "SELL FOR");
+			l_textstring = SPRINTF_DEFINE(s_textstring, "SELL FOR");
 			s_drawtext(dr1[0] + 8, dr1[1] + 2, 14);
 
-			l_textstring = sprintf(s_textstring, "%li GP", cost);
+			l_textstring = SPRINTF_DEFINE(s_textstring, "%li GP", cost);
 			s_drawtext(dr1[2] - 8 - l_textstring * 8, dr1[1] + 2, 14);
 		} else if (count / 10 % 2) {
-			l_textstring = sprintf(s_textstring, "INCORRECT OBJECT");
+			l_textstring = SPRINTF_DEFINE(s_textstring, "INCORRECT OBJECT");
 			s_drawtext(dr1[0] + 8, dr1[1] + 2, 4);
 		}
 
@@ -382,11 +378,11 @@ void RenderGameGUI(void) {
 		#ifdef BLENDING
 		for (i = 0; i < 7; i++)
 		#else
-		for (i = 0; i < 6; i++)
+		for (i = 0; i < 5; i++)
 		#endif
 		{
 			if (cursormodecount > 5 + i) {
-				l_textstring = sprintf(s_textstring, "%s", menu_item[i]);
+				l_textstring = SPRINTF_DEFINE(s_textstring, "%s", menu_item[i]);
 				if (i == menuitem)
 					s_drawtext(dr1[0] + 2, dr1[1] + 2 + i * 16, 15);
 				else
@@ -398,16 +394,16 @@ void RenderGameGUI(void) {
 			DrawRect(dr1[0] + 2, dr1[1] + 2 + menuitem * 16, dr1[2] - 2,
 					dr1[1] + 18 + menuitem * 16, 14);
 
-			l_textstring = sprintf(s_textstring, "%s", speed_text[gamespeed]);
-			s_drawtext(dr1[1] + 110, dr1[1] + 18, 9);
+			l_textstring = SPRINTF_DEFINE(s_textstring, "%s", speed_text[gamespeed]);
+			s_drawtext(dr1[1] + 110 + 20, dr1[1] + 18, 9);
 
-			l_textstring = sprintf(s_textstring, "%s", onoff_text[soundon]);
+			l_textstring = SPRINTF_DEFINE(s_textstring, "%s", onoff_text[soundon]);
 			s_drawtext(dr1[1] + 140, dr1[1] + 34, 9);
 
-			l_textstring = sprintf(s_textstring, "%s", onoff_text[musicon]);
+			l_textstring = SPRINTF_DEFINE(s_textstring, "%s", onoff_text[musicon]);
 			s_drawtext(dr1[1] + 140, dr1[1] + 50, 9);
 #ifdef BLENDING
-			l_textstring = sprintf(s_textstring, "%s", onoff_text[screenblend]);
+			l_textstring = SPRINTF_DEFINE(s_textstring, "%s", onoff_text[screenblend]);
 			s_drawtext(dr1[1] + 140, dr1[1] + 66, 9);
 #endif
 		}

@@ -20,17 +20,17 @@
 #define Uint64 uint64_t
 #define Sint8 int8_t
 #define Sint16 int16_t
-#define Sint32 int32_t
+#define Sint32 int
 #define Sint64 int64_t
 
 extern void InitGameCore(void);
 extern void GameCoreTick(void);
 extern void ShutDownCore(void);
 
-extern void PlayMusic_game(unsigned char itrack);
-extern void PlaySound_game(unsigned char ibank, signed char pan);
-extern void PlaySoundEx_game(unsigned char ibank, signed char pan);
-extern void SetVolume(unsigned char volume);
+extern void PlayMusic_game(int itrack);
+extern void PlaySound_game(int ibank, int pan);
+extern void PlaySoundEx_game(int ibank, int pan);
+extern void SetVolume(int volume);
 extern void LoadSound_game(void);
 void FreeSound(void);
 extern void Terminate(void);

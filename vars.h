@@ -16,14 +16,13 @@
 #include "ssystem.h"
 #include "types.h"
 
-#ifdef LINUX
-extern uint8_t* screen_buffering;
-#else
-extern uint8_t screen_buffering[320*240];
-#endif
+#define SCREEN_WIDTH_GAME 256
+#define SCREEN_HEIGHT_GAME 240
+
+extern uint8_t screen_buffering[SCREEN_WIDTH_GAME*240];
 //#define screen_buffering screen->pixels
 
-extern Uint8 palette[256][3];
+//extern Uint8 palette[16][3];
 extern Uint8 button[12], vbutton[12], buttonpressed;
 extern Sint8 dpad, dpadi;
 extern Uint32 count;

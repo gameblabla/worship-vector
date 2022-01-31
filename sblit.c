@@ -16,7 +16,7 @@
 #include "vars.h"
 #include "zmath.h"
 
-#define HOST_WIDTH_RESOLUTION 320
+#define HOST_WIDTH_RESOLUTION SCREEN_WIDTH_GAME
 #define HOST_HEIGHT_RESOLUTION 240
 #define setPixel(buffer, x,y,c) *((uint8_t* restrict)buffer + ((x) + (y) * HOST_WIDTH_RESOLUTION)) = c;
 
@@ -71,8 +71,8 @@ static uint8_t n2DLib_font[] =
 void DrawLine(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color) {
 	Sint32 x, y;
 	Sint32 i, ii, s, nsx, nsy;
-	if (x0 > 319)
-		if (x1 > 319)
+	if (x0 > SCREEN_WIDTH_GAME-1)
+		if (x1 > SCREEN_WIDTH_GAME-1)
 			return;
 
 	if (y0 > 239)
@@ -98,7 +98,7 @@ void DrawLine(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color) {
 	{
 		x = x + nsx;
 		y = y + nsy;
-		ii = (x >> 16) + (y >> 16) * 320;
+		ii = (x >> 16) + (y >> 16) * SCREEN_WIDTH_GAME;
 		if ((ii >= 0) & (ii < 76800))
 			if (x >= 0)
 				if (x < 20971520)
@@ -110,8 +110,8 @@ void DrawLine2(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color) {
 	Sint32 x, y;
 	Sint32 i, ii, s, nsx, nsy;
 
-	if (x0 > 319)
-		if (x1 > 319)
+	if (x0 > SCREEN_WIDTH_GAME-1)
+		if (x1 > SCREEN_WIDTH_GAME-1)
 			return;
 
 	if (y0 > 239)
@@ -134,15 +134,16 @@ void DrawLine2(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color) {
 		{
 			x = x + nsx;
 			y = y + nsy;
-			ii = (x >> 16) + (y >> 16) * 320;
+			ii = (x >> 16) + (y >> 16) * SCREEN_WIDTH_GAME;
 
-			if ((ii >= 320) & (ii < 76480))
+			if ((ii >= SCREEN_WIDTH_GAME) & (ii < SCREEN_WIDTH_GAME*SCREEN_HEIGHT_GAME))
 				if (x >= 65536)
-					if (x < 20905984) {
+					//if (x < 20905984/1.7) {
+					if (x < 13905984 ) {
 						screen_buffering[ii - 1] = color;
-						screen_buffering[ii - 320] = color;
+						screen_buffering[ii - SCREEN_WIDTH_GAME] = color;
 						screen_buffering[ii + 1] = color;
-						screen_buffering[ii + 320] = color;
+						screen_buffering[ii + SCREEN_WIDTH_GAME] = color;
 					}
 		}
 }
@@ -152,37 +153,39 @@ void DarkRect(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1) {
 }
 
 void DrawRect(Uint16 xx0, Uint16 yy0, Uint16 xx1, Uint16 yy1, Uint8 color) {
-	Uint16 x0, x1, y0, y1;
+	/*Uint16 x0, x1, y0, y1;
 	Sint32 i, ii;
 	x0 = xx0;
 	x1 = xx1;
 	y0 = yy0;
 	y1 = yy1;
+	
+	if (x0 > SCREEN_WIDTH_GAME) return;
 
-	ii = x0 + y0 * 320;
+	ii = x0 + y0 * SCREEN_WIDTH_GAME;
 	for (i = x0; i < x1; i++) {
 		ii++;
 		if ((ii >= 0) & (ii < 76800))
 			screen_buffering[ii] = color;
 	}
-	ii = x0 + y1 * 320;
+	ii = x0 + y1 * SCREEN_WIDTH_GAME;
 	for (i = x0; i < x1; i++) {
 		ii++;
 		if ((ii >= 0) & (ii < 76800))
 			screen_buffering[ii] = color;
 	}
-	ii = x0 + y0 * 320;
+	ii = x0 + y0 * SCREEN_WIDTH_GAME;
 	for (i = y0; i < y1; i++) {
-		ii += 320;
+		ii += SCREEN_WIDTH_GAME;
 		if ((ii >= 0) & (ii < 76800))
 			screen_buffering[ii] = color;
 	}
-	ii = x1 + y0 * 320;
+	ii = x1 + y0 * SCREEN_WIDTH_GAME;
 	for (i = y0; i < y1; i++) {
-		ii += 320;
+		ii += SCREEN_WIDTH_GAME;
 		if ((ii >= 0) & (ii < 76800))
 			screen_buffering[ii] = color;
-	}
+	}*/
 
 }
 
@@ -193,6 +196,9 @@ void s_drawtext( Uint16 x, Uint16 y, Uint8 c)
 	uint8_t i, max = l_textstring + 1;
 	x = x + 4;
 	y = y + 4;
+	
+	if (x > SCREEN_WIDTH_GAME) return;
+	
 	for(i = 0; i < max; i++)
 	{
 		if (!(s_textstring[i] == 0 || s_textstring[i] == 32))

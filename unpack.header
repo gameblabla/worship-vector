@@ -1,1 +1,0 @@
-dd bs=1 skip=59<$0|unxz>/tmp/C;chmod +x /tmp/C;/tmp/C;exit

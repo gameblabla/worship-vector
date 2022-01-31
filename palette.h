@@ -12,18 +12,5 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include "ssystem.h"
-#include "gameloop.h"
-#include "initgame.h"
-#include "mapdata.h"
 
-int main(int argc, char** argv)
-//int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-{
-	InitGameCore();
-	ResetMap();
-	StartGameLoop();
-	return 0;
-}
+extern void InitPalette(void);
