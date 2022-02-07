@@ -106,8 +106,87 @@ void DrawLine(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color) {
 	}
 }
 
-void DrawLine2(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color) {
-	Sint32 x, y;
+typedef
+ union
+  {
+   int32_t i;
+   struct
+    {
+     int16_t lo; // endian-specific!
+     int16_t hi;
+    };
+  } fixed_point;
+
+void DrawLine2(Uint16 x, Uint16 y, Uint16 x2, Uint16 y2, Uint8 color) {
+	
+	if (x > SCREEN_WIDTH_GAME-1 || x2 > SCREEN_WIDTH_GAME-1) return;
+	if (y > 239 || y2 > 239) return;
+
+	int yLonger=0;
+	int incrementVal, endVal;
+	int shortLen=y2-y;
+	int longLen=x2-x;
+	
+	if (abs(shortLen)>abs(longLen)) {
+		int swap=shortLen;
+		shortLen=longLen;
+		longLen=swap;
+		yLonger=1;
+	}
+	endVal=longLen;
+	if (longLen<0) {
+		incrementVal=-1;
+		longLen=-longLen;
+	} else incrementVal=1;
+	int decInc;
+	if (longLen==0) decInc=0;
+	else decInc = (shortLen << 16) / longLen;
+	int j=0;
+	if (yLonger) {	
+		for (int i=0;i!=endVal;i+=incrementVal) {
+			setPixel(screen_buffering,x+(j >> 16),y+i, color);	
+			j+=decInc;
+		}
+	} else {
+		for (int i=0;i!=endVal;i+=incrementVal) {
+			setPixel(screen_buffering,x+i,y+(j >> 16), color);
+			j+=decInc;
+		}
+	}
+	
+	/*fixed_point f;
+	int x; 
+	int32_t m;
+	
+	if (x0 > SCREEN_WIDTH_GAME-1 || x1 > SCREEN_WIDTH_GAME-1) return;
+	if (y0 > 239 || y1 > 239) return;
+	
+	m=((int32_t)(y1-y0)<<16)/(x1-x0);
+	f.i=y0<<16;
+	for (x=x0;x<=x1;x++,f.i+=m)
+	{
+		fixed_point g=f;
+		g.i+=32767;
+		setPixel(screen_buffering,x,g.hi, color);
+	}*/
+	
+	/*int dx =  abs (x1 - x0), sx = x0 < x1 ? 1 : -1;
+	int dy = -abs (y1 - y0), sy = y0 < y1 ? 1 : -1; 
+	int err = dx + dy, e2; 
+ 
+	if (x0 > SCREEN_WIDTH_GAME-1 || x1 > SCREEN_WIDTH_GAME-1) return;
+	if (y0 > 239 || y1 > 239) return;
+			
+	for (;;)
+	{
+		setPixel(screen_buffering,x0,y0, color);
+		if (x0 == x1 && y0 == y1) break;
+		e2 = 2 * err;
+		if (e2 >= dy) { err += dy; x0 += sx; }
+		if (e2 <= dx) { err += dx; y0 += sy; } 
+	}*/
+	
+	/*Sint32 x, y;
 	Sint32 i, ii, s, nsx, nsy;
 
 	if (x0 > SCREEN_WIDTH_GAME-1)
@@ -145,7 +224,7 @@ void DrawLine2(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1, Uint8 color) {
 						screen_buffering[ii + 1] = color;
 						screen_buffering[ii + SCREEN_WIDTH_GAME] = color;
 					}
-		}
+		}*/
 }
 
 void DarkRect(Uint16 x0, Uint16 y0, Uint16 x1, Uint16 y1) {

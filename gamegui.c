@@ -68,7 +68,7 @@ Uint8 mapcolor[20] = { 2, 1, 6, 11, 9, 14, 4, 0, 0, 12, 8, 7, 15, 15, 15, 15,
 
 void RenderMap4(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1)
 {
-	Sint16 x, y, cx, cy, rx, ry;
+	/*Sint16 x, y, cx, cy, rx, ry;
 	Uint8 c, i;
 	Sint32 ii;
 	cx = (x1 + x0) / 2;
@@ -113,7 +113,7 @@ void RenderMap4(Sint16 x0, Sint16 y0, Sint16 x1, Sint16 y1)
 							screen_buffering[ii - SCREEN_WIDTH_GAME-1] = c;
 
 						}
-		}
+		}*/
 }
 
 void ProcMainMenu(void) {
@@ -280,7 +280,7 @@ void RenderGameGUI(void) {
 	}
 
 	l_textstring = SPRINTF_DEFINE(s_textstring, "%i LIVES", lives);
-	s_drawtext(290 - l_textstring * 8, 222, GUIc - 10);
+	s_drawtext(200 - l_textstring * 8, 222, GUIc - 10);
 
 	for (x = 0; x < 4; x++) {
 		dr[x] = dr[x] + (cm_dr[cursormode][x] - dr[x]) / 2;
@@ -312,7 +312,7 @@ void RenderGameGUI(void) {
 
 		if (cost > 0) {
 			l_textstring = SPRINTF_DEFINE(s_textstring, "%i GP", cost);
-			s_drawtext(dr1[2] - 8 - l_textstring * 8, dr1[1] + 2, 14);
+			s_drawtext(dr1[2] - 8 - l_textstring * 8 - 100, dr1[1] + 2, 14);
 
 			if (cursorvisual == 2)
 				l_textstring = SPRINTF_DEFINE(s_textstring, "TURRET MOUNT");
